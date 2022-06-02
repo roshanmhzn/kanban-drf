@@ -1,4 +1,3 @@
-from operator import index
 from django.db import models
 
 from columnapi.models import Column
