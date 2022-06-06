@@ -20,5 +20,6 @@ urlpatterns = [
     path("", include("boardapi.urls")),
     path("", include("columnapi.urls")),
     path("", include("taskapi.urls")),
+    path("", include("boardcolumnapi.urls")),
     path('admin/', admin.site.urls),
 ]
