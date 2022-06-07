@@ -10,12 +10,12 @@ class BoardColumnRelation(models.Model):
     def __str__(self):
         return str(self.board_id) + ' ' + str(self.column_id)
 
-    def save(self, *args, **kwargs):
-        # print(self.board_id, self.column_id)
-        if BoardColumnRelation.objects.filter(board_id=self.board_id, column_id=self.column_id).exists():
-            raise IntegrityError
-        else:
-            super(BoardColumnRelation, self).save(*args, **kwargs)
+    # def save(self, *args, **kwargs):
+    #     # print(self.board_id, self.column_id)
+    #     if BoardColumnRelation.objects.filter(board_id=self.board_id, column_id=self.column_id).exists():
+    #         raise IntegrityError
+    #     else:
+    #         super(BoardColumnRelation, self).save(*args, **kwargs)
 
 
     

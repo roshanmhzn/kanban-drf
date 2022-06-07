@@ -29,6 +29,9 @@ class ColumnListCreate(APIView):
         """
         serializer = ColumnSerializer(data=request.data)
         if serializer.is_valid():
+            column_index = serializer.validated_data['index']
+            if Column.objects.filter(index=column_index):
+                return Response(status=status.HTTP_406_NOT_ACCEPTABLE)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -61,4 +64,3 @@ class ColumnDetail(APIView):
         Column = self.get_object(pk)
         Column.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-

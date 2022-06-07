@@ -7,4 +7,4 @@ class ColumnSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Column
-        fields = ('name', 'index', 'status')
+        fields = ('id','name', 'index', 'status')
