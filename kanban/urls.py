@@ -21,5 +21,6 @@ urlpatterns = [
     path("", include("columnapi.urls")),
     path("", include("taskapi.urls")),
     path("", include("boardcolumnapi.urls")),
+    path('api-auth/', include('rest_framework.urls')),
     path('admin/', admin.site.urls),
 ]
