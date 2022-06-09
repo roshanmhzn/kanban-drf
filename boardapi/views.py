@@ -42,9 +42,15 @@ class BoardDetail(APIView):
             return Board.objects.get(pk=pk)
         except Board.DoesNotExist:
             raise Http404
+            # return Response({'message': 'The Board with id doesnot exist'}, status=status.HTTP_406_NOT_ACCEPTABLE)
+        # return Board.objects.filter(pk=pk)
+            
     
     def get(self, request, pk):
         board = self.get_object(pk)
+        # if not board:
+        #     content = {'message': 'The Board with id doesnot exist'}
+        #     return Response(content, status=status.HTTP_406_NOT_ACCEPTABLE)
         serializer = BoardSerializer(board)
         return Response(serializer.data)
     

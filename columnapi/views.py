@@ -31,7 +31,8 @@ class ColumnListCreate(APIView):
         if serializer.is_valid():
             column_index = serializer.validated_data['index']
             if Column.objects.filter(index=column_index):
-                return Response(status=status.HTTP_406_NOT_ACCEPTABLE)
+                content = {'message': 'The Column with this Index already exists'}
+                return Response(content, status=status.HTTP_406_NOT_ACCEPTABLE)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -42,6 +43,7 @@ class ColumnDetail(APIView):
     """
 
     def get_object(self,pk):
+        # index = pk
         try:
             return Column.objects.get(pk=pk)
         except Column.DoesNotExist:
