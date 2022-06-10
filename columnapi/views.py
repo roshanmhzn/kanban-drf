@@ -19,8 +19,8 @@ class ColumnListCreate(APIView):
         """
         Return a list of all Columns
         """
-        Columns = Column.objects.all().order_by('index')
-        serializer = ColumnSerializer(Columns, many=True)
+        columns = Column.objects.all().order_by('index')
+        serializer = ColumnSerializer(columns, many=True)
         return Response(serializer.data)
     
     def post(self, request):
@@ -43,7 +43,6 @@ class ColumnDetail(APIView):
     """
 
     def get_object(self,pk):
-        # index = pk
         try:
             return Column.objects.get(pk=pk)
         except Column.DoesNotExist:

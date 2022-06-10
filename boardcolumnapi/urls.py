@@ -1,9 +1,9 @@
 from django.urls import path
 
-from .views import BoardColumnRelationListCreate, BoardColumnRelationDetail, BoardColumnList
+from .views import BoardColumnListCreate, BoardColumnDetail, BoardColumnList
 
 urlpatterns = [
-    path('boardcolumnrelations/', BoardColumnRelationListCreate.as_view(), name='boardvolumnrelation_list_create'),
-    path('boardcolumnrelation/<int:pk>', BoardColumnRelationDetail.as_view(), name='BoardColumnRelation_detail'),
-    path('boardcolumnrelations/bybid/<int:board_id>', BoardColumnList.as_view(), name='BoardColumnRelation_lists')
+    path('boardcolumns/', BoardColumnListCreate.as_view(), name='boardcolumn_list_create'),
+    path('boardcolumn/<int:pk>', BoardColumnDetail.as_view(), name='boardcolumn_detail'),
+    path('boardcolumns/<int:board_id>', BoardColumnList.as_view(), name='boardcolumn_lists')
 ]

@@ -1,5 +1,5 @@
 from django.contrib import admin
 
-from .models import BoardColumnRelation
+from .models import BoardColumn
 
-admin.site.register(BoardColumnRelation)
+admin.site.register(BoardColumn)

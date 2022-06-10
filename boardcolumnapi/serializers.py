@@ -1,11 +1,10 @@
 from rest_framework import serializers
 
-from .models import BoardColumnRelation
-from django.contrib.auth import get_user_model
+from .models import BoardColumn
 
 
-class BoardColumnRelationSerializer(serializers.ModelSerializer):
+class BoardColumnSerializer(serializers.ModelSerializer):
     
     class Meta:
-        model = BoardColumnRelation
+        model = BoardColumn
         fields = ('id', 'board_id', 'column_id')

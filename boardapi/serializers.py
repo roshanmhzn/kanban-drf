@@ -4,8 +4,14 @@ from .models import Board
 from django.contrib.auth import get_user_model
 
 
-class BoardSerializer(serializers.ModelSerializer):
+class BoardListSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Board
-        fields = ('id', 'user', 'name')
+        fields = ('id', 'user', 'name','created_at')
+
+class BoardDetailSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = Board
+        fields = ( 'user', 'name','created_at')

@@ -1,12 +1,11 @@
 from django.http import Http404
-from django.shortcuts import render
 
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import Board
-from .serializers import BoardSerializer
+from .serializers import BoardListSerializer, BoardDetailSerializer
 
 
 class BoardListCreate(APIView):
@@ -19,15 +18,17 @@ class BoardListCreate(APIView):
         Return a list of all boards
         """
         boards = Board.objects.all()
-        serializer = BoardSerializer(boards, many=True)
+        serializer = BoardListSerializer(boards, many=True)
         return Response(serializer.data)
     
     def post(self, request):
         """
         Create a new board in the system
         """
-        serializer = BoardSerializer(data=request.data)
+        serializer = BoardListSerializer(data=request.data)
         if serializer.is_valid():
+            user = request.user
+            serializer.validated_data['user'] = user
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -42,21 +43,16 @@ class BoardDetail(APIView):
             return Board.objects.get(pk=pk)
         except Board.DoesNotExist:
             raise Http404
-            # return Response({'message': 'The Board with id doesnot exist'}, status=status.HTTP_406_NOT_ACCEPTABLE)
-        # return Board.objects.filter(pk=pk)
             
     
     def get(self, request, pk):
         board = self.get_object(pk)
-        # if not board:
-        #     content = {'message': 'The Board with id doesnot exist'}
-        #     return Response(content, status=status.HTTP_406_NOT_ACCEPTABLE)
-        serializer = BoardSerializer(board)
+        serializer = BoardDetailSerializer(board)
         return Response(serializer.data)
     
     def put(self, request, pk):
         board = self.get_object(pk)
-        serializer = BoardSerializer(board, data=request.data)
+        serializer = BoardListSerializer(board, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
