@@ -1,10 +1,10 @@
 # Python
-*.pyc
-*~
-__pycache__
+# *.pyc
+# *~
+# __pycache__
 
-migrations/
-migration
+# migrations/
+# migration
 
 # Env
 .env
@@ -14,7 +14,7 @@ env
 env/
 
 # Database
-db.sqlite3
+# db.sqlite3
 
 # Static folder at project root
 /static/
