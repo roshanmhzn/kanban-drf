@@ -1,6 +1,3 @@
-from functools import partial
-
-from django.template import context
 from boardcolumnapi.models import BoardColumn
 from django.http import Http404
 
@@ -93,33 +90,72 @@ class TaskDetail(APIView):
         
         
 
-    def check_serializer_validity(self, serializer):
+    def check_serializer_validity(self, serializer, task):
         
         if not serializer.is_valid():
             return Response(status=status.HTTP_403_FORBIDDEN)
         
         if serializer.is_valid():
+           
+            # If there is board, then there is column.
+            # If there is no board then there is no column
             if 'board' in serializer.validated_data:
                 board = serializer.validated_data['board']
                 column = serializer.validated_data['column']
                 task_objects = Task.objects.filter(board_id=board.id, column_id=column.id) # get all the tasks from the Task
-                if not task_objects:
-                    serializer.validated_data['index'] = 1
-                else:
-                    task_indexes = []
-                    new_index = None
-                    for task_object in task_objects:
-                        task_indexes.append(task_object.index)
-                    max_index = max(task_indexes)
-                    for i in range(1, max_index+1):
-                        if i not in task_indexes:
-                            new_index = i
-                            break
-                    if new_index is None:
-                        new_index = max_index + 1
-                    serializer.validated_data['index'] = new_index   
+                if 'index' in serializer.validated_data:
+                    if not task_objects:
+                        serializer.validated_data['index'] = 1
+                    else:
+                        task_indexes = []
+                        new_index = None
+                        for task_object in task_objects:
+                            task_indexes.append(task_object.index)
+                        max_index = max(task_indexes)
+                        for i in range(1, max_index+1):
+                            if i not in task_indexes:
+                                new_index = i
+                                break
+                        if new_index is None:
+                            new_index = max_index + 1
+                        serializer.validated_data['index'] = new_index   
                 serializer.save()
                 return serializer
+
+            # If there is index without board and column            
+            if 'index' in serializer.validated_data:
+                if isinstance(serializer.validated_data['index'], int):
+                    # import pdb; pdb.set_trace()
+                    return ('invalid index datatype',)
+                task_index = serializer.validated_data['index']
+                current_task_index = task.index
+                if current_task_index == task_index:
+                    serializer.save()
+                    return serializer
+                board_id = task.board.id
+                column_id = task.column.id
+                requested_task_index = serializer.validated_data['index']
+                # import pdb;pdb.set_trace()
+                task_objects = Task.objects.filter(board_id=board_id, column_id=column_id)
+                task_indexes = []
+                new_index = None
+                # get all the task in task_indexes list
+                for task_object in task_objects:
+                    task_indexes.append(task_object.index)
+                max_index = max(task_indexes)
+                #if the requested task index is not in the list then take it
+                if requested_task_index not in task_indexes:
+                    serializer.save()
+                    return serializer
+                # if the request task index not found then get the low index
+                for i in range(1, max_index+1):
+                    if i not in task_indexes:
+                        new_index = i
+                        break
+                # if low index is not found then assign the last index
+                if new_index is None:
+                    new_index = max_index + 1
+                serializer.validated_data['index'] = new_index
             serializer.save()
             return serializer
     
@@ -136,40 +172,32 @@ class TaskDetail(APIView):
         if '0' in board_column: 
             return Response(board_column[1], status=status.HTTP_403_FORBIDDEN)     
         serializer = TaskSerializer(task, data=request.data)
-
-        serialized_data = self.check_serializer_validity(serializer)
-        
-        # Extra level if above doesn't work
-        # board = Board.objects.filter(id=request.data['board'])
-        # column = Column.objects.filter(pk=request.data['column'])
-        # if not (board and column):
-        #     msg = 'INVALID BOARD AND COLUMN'
-        #     if board and not column:
-        #         msg = 'INVALID COLUMN'
-        #     elif not board and column:
-        #         msg = 'INVALID BOARD'                
-        #     print(board, column)
-        #     content = {'message': msg}
-        #     return Response(content, status=status.HTTP_406_NOT_ACCEPTABLE)
+        # Check the serializer validity
+        serialized_data = self.check_serializer_validity(serializer, pk)
         
         return Response(serialized_data.data, status=status.HTTP_201_CREATED)
 
     def patch(self, request, pk):
         task = self.get_object(pk)
+        # Only Board or Column cannot be passed
+        if ('board' in request.data and 'column' not in request.data
+        ) or ('board' not in request.data and 'column' in request.data):
+            context = {"message": "The Board, Column  Must Pass"}
+            return Response(context, status=status.HTTP_403_FORBIDDEN)
+        
+        # If there is board and column in request.data
         if 'board' in request.data and 'column' in request.data:
             board_column = self.check_board_column(pk, request.data)  
+            # If there is a error in Invalid Datatype of Relation then show
+            # error with message
             if '0' in board_column: 
                 return Response(board_column[1], status=status.HTTP_403_FORBIDDEN)  
-        if ('board' in request.data and 'column' not in request.data
-        ) or ('board' not in request.data and 'column' in request.data
-        ) or ('board' not in request.data and 'column' not in request.data and 'index' in request.data):
-            context = {"message": "The Board, Column & Index Must Pass if Index is present AND Board & \
-             Column cannot be passed solo"}
-            return Response(context, status=status.HTTP_403_FORBIDDEN)
         serializer = TaskSerializer(task, data=request.data, partial=True)           
-        serialized_data = self.check_serializer_validity(serializer)
+        serialized_data = self.check_serializer_validity(serializer, task)
+        if 'invalid index datatype' in serialized_data:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        # import pdb; pdb.set_trace()
         return Response(serialized_data.data, status=status.HTTP_201_CREATED)
-
 
     # def patch(self, request, pk):
     #     task = self.get_object(pk)

@@ -30,15 +30,6 @@ class BoardColumnListCreate(APIView):
         """
         Create a new BoardColumn in the system
         """        
-        # try:
-        #     board = Board.objects.get(pk=request.data['board_id'])
-        #     column = Column.objects.get(pk=request.data['column_id'])
-        # except Board.DoesNotExist:
-        #     content = {'message': 'INVALID BOARD ID'}
-        #     return Response(content, status=status.HTTP_406_NOT_ACCEPTABLE)   
-        # except Column.DoesNotExist:
-        #     content = {'message': 'INVALID COLUMN ID'}
-        #     return Response(content, status=status.HTTP_406_NOT_ACCEPTABLE)
         serializer = BoardColumnSerializer(data=request.data)
 
         if not serializer.is_valid():
@@ -89,10 +80,31 @@ class BoardColumnDetail(APIView):
     def put(self, request, pk):
         board_column = self.get_object(pk)
         serializer = BoardColumnSerializer(board_column, data=request.data)
+        if not serializer.is_valid():
+            board = Board.objects.filter(id=request.data['board_id'])
+            column = Column.objects.filter(pk=request.data['column_id'])
+
+            if not (board and column):
+                msg = 'INVALID BOARD AND COLUMN'
+                if board and not column:
+                    msg = 'INVALID COLUMN'
+                elif not board and column:
+                    msg = 'INVALID BOARD'                
+                print(board, column)
+                content = {'message': msg}
+                return Response(content, status=status.HTTP_406_NOT_ACCEPTABLE)
+                
+    
         if serializer.is_valid():
+            boardid = serializer.validated_data["board_id"]
+            columnid = serializer.validated_data["column_id"]
+           
+            if BoardColumn.objects.filter(board_id=boardid, column_id=columnid).exists():
+                content = {'message': 'This Board and Column relation already exists'}
+                return Response(content, status=status.HTTP_406_NOT_ACCEPTABLE)    
             serializer.save()
-            return Response(serializer.data)
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     # def delete(self, request, pk):
     #     board_column = self.get_object(pk)
