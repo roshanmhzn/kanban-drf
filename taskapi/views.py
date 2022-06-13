@@ -93,7 +93,9 @@ class TaskDetail(APIView):
     def check_serializer_validity(self, serializer, task):
         
         if not serializer.is_valid():
-            return Response(status=status.HTTP_403_FORBIDDEN)
+            # import pdb; pdb.set_trace()
+            return 'invalid data'
+            
         
         if serializer.is_valid():
            
@@ -124,9 +126,8 @@ class TaskDetail(APIView):
 
             # If there is index without board and column            
             if 'index' in serializer.validated_data:
-                if isinstance(serializer.validated_data['index'], int):
-                    # import pdb; pdb.set_trace()
-                    return ('invalid index datatype',)
+                # if not isinstance(serializer.validated_data['index'], int):
+                #     return ('invalid data',)
                 task_index = serializer.validated_data['index']
                 current_task_index = task.index
                 if current_task_index == task_index:
@@ -194,8 +195,9 @@ class TaskDetail(APIView):
                 return Response(board_column[1], status=status.HTTP_403_FORBIDDEN)  
         serializer = TaskSerializer(task, data=request.data, partial=True)           
         serialized_data = self.check_serializer_validity(serializer, task)
-        if 'invalid index datatype' in serialized_data:
-            return Response(status=status.HTTP_403_FORBIDDEN)
+        if 'invalid data' in serialized_data:
+            context = {"message": "INVALID DATA"}
+            return Response(context, status=status.HTTP_403_FORBIDDEN)
         # import pdb; pdb.set_trace()
         return Response(serialized_data.data, status=status.HTTP_201_CREATED)
 
