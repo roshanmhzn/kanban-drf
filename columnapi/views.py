@@ -64,3 +64,19 @@ class ColumnDetail(APIView):
         Column = self.get_object(pk)
         Column.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+    
+class ColumnStatus(APIView):
+
+    def get_column_objects(self, status):  
+        results = Column.objects.filter(status=status).order_by('id')
+        if results:
+            return results
+        raise Http404  
+
+    def get(self, request, *args, **kwargs):
+        if kwargs['status'] not in (0,1):
+            context = {'message': 'The status value should be either 0 for False or 1 for True'}
+            return Response(context, status=status.HTTP_406_NOT_ACCEPTABLE)
+        tasks = self.get_column_objects(kwargs['status'])
+        serializer = ColumnSerializer(tasks, many=True)
+        return Response(serializer.data)
